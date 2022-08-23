@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE Map [
+<!ENTITY datasource-settings SYSTEM "inc/datasource-settings.xml.inc">
+]>
+
+<Map srs="+init=epsg:3857" background-color="transparent">
+
+  <FontSet name="fontset-0">
+    <Font face-name="DejaVu Sans Book"/>
+    <Font face-name="Unifont Medium"/>
+    <Font face-name="Unifont Upper Medium"/>
+  </FontSet>
+
+
+  <Style name="districts">
+    <Rule>
+      <Filter><![CDATA[([level] = '4')]]></Filter>
+      <LineSymbolizer stroke="#FF0000" stroke-width="5"/>
+    </Rule>
+    <Rule>
+      <Filter><![CDATA[([level] = '5')]]></Filter>
+      <LineSymbolizer stroke="#FF3F3F" stroke-width="4"/>
+    </Rule>
+    <Rule>
+      <Filter><![CDATA[([level] = '6')]]></Filter>
+      <LineSymbolizer stroke="#FF5F5F" stroke-width="3"/>
+    </Rule>
+    <Rule>
+      <Filter><![CDATA[([level] = '8')]]></Filter>
+      <LineSymbolizer stroke="#FF7F7F" stroke-width="2"/>
+    </Rule>
+    <Rule>
+      <Filter><![CDATA[([level] = '10')]]></Filter>
+      <LineSymbolizer stroke="#FFBFBF" stroke-width="1"/>
+    </Rule>
+  </Style>
+
+  <Layer name="districts" status="on"  srs="+init=epsg:3857">
+    <StyleName>districts</StyleName>
+    <Datasource>
+      <Parameter name="table">
+        ( SELECT way, tags->'health_level' AS level
+           FROM planet_osm_polygon
+          WHERE boundary = 'health'
+            AND tags->'health_level' IS NOT NULL
+            AND ST_Intersects(way, !bbox!)
+	  ORDER BY (tags->'health_level')::integer DESC
+	) AS way
+      </Parameter>
+      <Parameter name="geometry_field">way</Parameter>
+      &datasource-settings;
+    </Datasource>
+  </Layer>
+
+  <Style name="posts">
+    <Rule>
+      <PointSymbolizer/>
+    </Rule>
+  </Style>
+  
+  <Layer name="posts" status="on"  srs="+init=epsg:3857">
+    <StyleName>posts</StyleName>
+    <Datasource>
+      <Parameter name="table">
+        ( SELECT way, tags->'healthcare' AS type
+           FROM planet_osm_point
+          WHERE amenity = 'health_post'
+            AND ST_Intersects(way, !bbox!)
+	) AS way
+      </Parameter>
+      <Parameter name="geometry_field">way</Parameter>
+      &datasource-settings;
+    </Datasource>
+  </Layer>
+
+</Map>
